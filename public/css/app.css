@@ -1,0 +1,20 @@
+.circle {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    grid-column-gap: 1em;
+    grid-row-gap: 1em;
+}
+
+.circle_div {
+    background-color: antiquewhite;
+    position: relative;
+}
+.circle_div.new::after {content: '*'}
+.circle_div.old::before {content: '*'}
+
+.prediction {
+    background-color: aquamarine;
+    position: absolute;
+    top: 23em;
+}
+.prediction.hidden {display: none;}
