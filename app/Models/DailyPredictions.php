@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class DailyPredictions extends Model
 {
@@ -28,10 +29,23 @@ class DailyPredictions extends Model
         $daily_prediction = $daily_predictions->firstWhere('horoscope_id', $horoscope_id);
 
         if (is_null($daily_prediction)) {
-            $used_prediction_id = $daily_predictions->map(function($item) {
-                return $item['prediction_id'];
-            });
-            $prediction = Prediction::whereNotIn('id', $used_prediction_id)
+            if ($daily_predictions->count() === 0) {
+                $used_prediction_id = [0];
+            } else {
+                $used_prediction_id = $daily_predictions->map(function($item) {
+                    return $item['prediction_id'];
+                });
+            }
+
+            $prediction = DB::table('predictions')
+                ->select('predictions.*')
+                ->leftJoin('daily_predictions', 'predictions.id', '=', 'daily_predictions.prediction_id', 'left outer')
+                ->whereNotIn('predictions.id', $used_prediction_id)
+                ->where(function($query) use ($horoscope_id) {
+                    $query->where('daily_predictions.horoscope_id', '!=', $horoscope_id)
+                        ->orWhereNull('daily_predictions.horoscope_id');
+                })
+                ->groupBy('predictions.id')
                 ->inRandomOrder()
                 ->first();
 
